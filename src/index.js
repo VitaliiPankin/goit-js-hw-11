@@ -1,6 +1,7 @@
 import axios from 'axios';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import Notiflix from 'notiflix';
 
 let lightbox;
 
@@ -11,13 +12,10 @@ function initLightBox() {
   });
 }
 
-// function resetLightBox() {
-//   lightbox.destroy();
-//   lightbox = new SimpleLightbox('.gallery div', {
-//     captionsData: 'alt',
-//     captionDelay: 300,
-//   });
-// }
+Notiflix.Notify.init({
+  useIcon: false,
+});
+
 
 
 const refs = {
@@ -44,11 +42,12 @@ axios.defaults.baseURL = `https://pixabay.com/api/`;
 
 
 
-function fetchSearchFN() {
-    return axios.get(`?key=26643040-32c641035684a1e3b6d895020&q=${searchInputValue}&page=${refs.pageNumber}&per_page=${8}&image_type=photo&orientation=horizontal&safesearch=true`)
+const fetchSearchFN = async () => {
+    const {data} = await axios.get(`?key=26643040-32c641035684a1e3b6d895020&q=${searchInputValue}&page=${refs.pageNumber}&per_page=${8}&image_type=photo&orientation=horizontal&safesearch=true`)
     
-  
+  return data
   }
+
 
   function loadPictures(event){
     event.preventDefault();
@@ -62,14 +61,39 @@ function fetchSearchFN() {
     fetchSearchFN().then(renderPhoto)
   }
 
- 
-  function renderPhoto(){
-    fetchSearchFN().then(({data}) => {
-        if (data.total === 0){
-        return
-    }
-    console.log(data)
   
+  function nextPage(){
+      refs.pageNumber += 1
+    fetchSearchFN().then(renderPhoto)
+
+  }
+// console.log(refs.input[1])
+
+
+refs.input[0].addEventListener('input', addInput)
+  
+
+function addInput(){
+    if(refs.input[0].value !== ''){
+    refs.input[1].removeAttribute("disabled")
+  }
+}
+
+  function renderPhoto(){
+    fetchSearchFN().then((data) => {
+      const nameserch = searchInputValue
+      
+      if (data.total === 0){
+          Notiflix.Notify.failure(`❌ Oops, Попробуйте корректно ввести запрос`);
+        return
+    } else if(nameserch === searchInputValue){
+    refs.input[1].setAttribute("disabled", "disabled")
+    refs.input[0].value = ''
+  }
+
+
+    console.log(data)
+    Notiflix.Notify.success(`Показано ${data.hits.length}-изображений по запросу ${searchInputValue}`);
     const markup = data.hits.map(
       ({
         likes,
@@ -104,13 +128,7 @@ function fetchSearchFN() {
       </div>
     </div>`).join('');
 refs.divRender.insertAdjacentHTML('beforeend', markup)
+
+
     })
   }
-  function nextPage(){
-      refs.pageNumber += 1
-    fetchSearchFN().then(renderPhoto)
-
-  }
-
-
-
