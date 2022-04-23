@@ -89,6 +89,7 @@ function addInput(){
     } else if(nameserch === searchInputValue){
     refs.input[1].setAttribute("disabled", "disabled")
     refs.input[0].value = ''
+    refs.btnMore.classList.remove('is-hidden')
   }
 
 
