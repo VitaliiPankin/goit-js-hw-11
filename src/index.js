@@ -1,15 +1,7 @@
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
 import Notiflix from 'notiflix';
-import API from './js/fetch';
-let lightbox;
-
-function initLightBox() {
-  lightbox = new SimpleLightbox('.gallery div', {
-    captionsData: 'alt',
-    captionDelay: 300,
-  });
-}
+import { fetchSearchFN } from './js/fetch';
+import { initLightBox } from './js/simplelightbox';
+import { markup } from './js/markup';
 
 Notiflix.Notify.init({
   useIcon: false,
@@ -26,7 +18,6 @@ export const refs = {
 
 refs.input.addEventListener('submit', loadPictures);
 refs.btnMore.addEventListener('click', nextPage);
-refs.gallery.addEventListener('click', initLightBox);
 
 function loadPictures(event) {
   event.preventDefault();
@@ -34,14 +25,14 @@ function loadPictures(event) {
   refs.divRender.innerHTML = '';
   refs.searchInputValue = event.target.elements[0].value.trim();
 
-  API.fetchSearchFN().then(renderPhoto);
+  renderPhoto();
+  refs.pageNumber = 1;
 }
 
 function nextPage() {
   refs.pageNumber += 1;
-  API.fetchSearchFN().then(renderPhoto);
+  renderPhoto();
 }
-// console.log(refs.input[1])
 
 refs.input[0].addEventListener('input', addInput);
 
@@ -51,8 +42,8 @@ function addInput() {
   }
 }
 
-function renderPhoto() {
-  API.fetchSearchFN().then(data => {
+async function renderPhoto() {
+  fetchSearchFN().then(data => {
     const nameserch = refs.searchInputValue;
 
     if (data.total === 0) {
@@ -68,34 +59,8 @@ function renderPhoto() {
     Notiflix.Notify.success(
       `Показано ${data.hits.length}-изображений по запросу ${refs.searchInputValue}`,
     );
-    const markup = data.hits
-      .map(
-        ({ likes, webformatURL, largeImageURL, tags, views, comments, downloads }) =>
-          `<div class="photo-card" href="${largeImageURL}">
-      <div class="border-img_conteiner">
-        <img class="border-img" src="${webformatURL}" alt="${tags}" loading="lazy" />
-      </div>
-      <div class="info">
-        <p class="info-item">
-          <b>Likes</b>
-          <span class="info-item-number">${likes}</span>
-        </p>
-        <p class="info-item">
-          <b>Views</b>
-          <span class="info-item-number">${views}</span> 
-        </p>
-        <p class="info-item">
-          <b>Comments </b>
-          <span class="info-item-number">${comments}</span>
-        </p>
-        <p class="info-item">
-          <b>Downloads</b>
-          <span class="info-item-number">${downloads}</span>
-        </p>
-      </div>
-    </div>`,
-      )
-      .join('');
-    refs.divRender.insertAdjacentHTML('beforeend', markup);
+
+    markup(data);
+    initLightBox();
   });
 }
