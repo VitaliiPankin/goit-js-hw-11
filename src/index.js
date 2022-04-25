@@ -1,8 +1,8 @@
-import axios from 'axios';
+
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import Notiflix from 'notiflix';
-
+import API from './js/fetch'
 let lightbox;
 
 function initLightBox() {
@@ -18,35 +18,23 @@ Notiflix.Notify.init({
 
 
 
-const refs = {
+export const refs = {
     input: document.querySelector('#search-form'),
     btnMore: document.querySelector('.js-btn-more'),
     divRender: document.querySelector('.js-gallery'),
     gallery: document.querySelector('.gallery'),
     pageNumber: 1,
-    
+    searchInputValue: '',
   };
 
-  let searchInputValue = '';
+  
 
   refs.input.addEventListener('submit', loadPictures)
   refs.btnMore.addEventListener('click', nextPage)
   refs.gallery.addEventListener('click', initLightBox)
 
 
-axios.defaults.baseURL = `https://pixabay.com/api/`;
 
-
-
-
-
-
-
-const fetchSearchFN = async () => {
-    const {data} = await axios.get(`?key=26643040-32c641035684a1e3b6d895020&q=${searchInputValue}&page=${refs.pageNumber}&per_page=${8}&image_type=photo&orientation=horizontal&safesearch=true`)
-    
-  return data
-  }
 
 
   function loadPictures(event){
@@ -54,17 +42,17 @@ const fetchSearchFN = async () => {
     
     
     refs.divRender.innerHTML = ""
-    searchInputValue = event.target.elements[0].value.trim()
+    refs.searchInputValue = event.target.elements[0].value.trim()
 
     
 
-    fetchSearchFN().then(renderPhoto)
+    API.fetchSearchFN().then(renderPhoto)
   }
 
   
   function nextPage(){
       refs.pageNumber += 1
-    fetchSearchFN().then(renderPhoto)
+    API.fetchSearchFN().then(renderPhoto)
 
   }
 // console.log(refs.input[1])
@@ -80,13 +68,13 @@ function addInput(){
 }
 
   function renderPhoto(){
-    fetchSearchFN().then((data) => {
-      const nameserch = searchInputValue
+    API.fetchSearchFN().then((data) => {
+      const nameserch = refs.searchInputValue
       
       if (data.total === 0){
           Notiflix.Notify.failure(`❌ Oops, Попробуйте корректно ввести запрос`);
         return
-    } else if(nameserch === searchInputValue){
+    } else if(nameserch === refs.searchInputValue){
     refs.input[1].setAttribute("disabled", "disabled")
     refs.input[0].value = ''
     refs.btnMore.classList.remove('is-hidden')
@@ -94,7 +82,7 @@ function addInput(){
 
 
     console.log(data)
-    Notiflix.Notify.success(`Показано ${data.hits.length}-изображений по запросу ${searchInputValue}`);
+    Notiflix.Notify.success(`Показано ${data.hits.length}-изображений по запросу ${refs.searchInputValue}`);
     const markup = data.hits.map(
       ({
         likes,
