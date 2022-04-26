@@ -25,8 +25,9 @@ function loadPictures(event) {
   refs.divRender.innerHTML = '';
   refs.searchInputValue = event.target.elements[0].value.trim();
 
-  renderPhoto();
+  
   refs.pageNumber = 1;
+  renderPhoto();
 }
 
 function nextPage() {
